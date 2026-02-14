@@ -70,9 +70,12 @@ app.get("/country/:cca2", async (req, res) => {
     const allResponse = await axios.get(`${API_URL}/all?fields=name,flags,cca2`);
     const allCountries = allResponse.data.sort((a, b) => a.name.common.localeCompare(b.name.common));
     
+    // API returns an array, so extract the first element
+    const selectedCountry = Array.isArray(response.data) ? response.data[0] : response.data;
+    
     res.render("index.ejs", {
       countries: allCountries,
-      selectedCountry: response.data,
+      selectedCountry: selectedCountry,
       error: null,
       searchResults: null
     });

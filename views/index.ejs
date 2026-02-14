@@ -327,7 +327,7 @@
     <% } %>
 
     <!-- Selected Country Details -->
-    <% if (selectedCountry) { %>
+    <% if (selectedCountry && selectedCountry.flags) { %>
       <button class="back-btn" onclick="location.href='/'">← Back to All Countries</button>
       
       <div class="details-container">
