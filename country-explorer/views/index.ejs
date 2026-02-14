@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Country Explorer</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      color: white;
+      margin-bottom: 30px;
+    }
+
+    h1 {
+      font-size: 3em;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .search-box {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 30px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+      display: flex;
+      gap: 10px;
+    }
+
+    .search-box input {
+      flex: 1;
+      padding: 12px 15px;
+      border: 2px solid #ddd;
+      border-radius: 5px;
+      font-size: 16px;
+      transition: border-color 0.3s;
+    }
+
+    .search-box input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .search-box button {
+      padding: 12px 25px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+
+    .search-box button:hover {
+      background: #764ba2;
+    }
+
+    .error {
+      background: #ff6b6b;
+      color: white;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .flags-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 15px;
+      margin-bottom: 30px;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+    }
+
+    .flag-item {
+      cursor: pointer;
+      text-align: center;
+      padding: 10px;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      border: 3px solid transparent;
+    }
+
+    .flag-item:hover {
+      background: #f0f0f0;
+      transform: scale(1.05);
+      border-color: #667eea;
+    }
+
+    .flag-item img {
+      width: 100%;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 5px;
+      margin-bottom: 8px;
+    }
+
+    .flag-item .country-name {
+      font-size: 12px;
+      font-weight: bold;
+      color: #333;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .details-container {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+      padding: 30px;
+      margin-top: 20px;
+    }
+
+    .details-header {
+      display: flex;
+      gap: 30px;
+      margin-bottom: 30px;
+      border-bottom: 2px solid #f0f0f0;
+      padding-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .flag-section {
+      flex-shrink: 0;
+    }
+
+    .flag-section .flag {
+      max-width: 300px;
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 8px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    }
+
+    .coatOfArms {
+      max-width: 200px;
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+      margin-top: 10px;
+    }
+
+    .info-section {
+      flex: 1;
+      min-width: 300px;
+    }
+
+    .info-section h2 {
+      color: #667eea;
+      margin-bottom: 15px;
+      font-size: 28px;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .info-item {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      border-left: 4px solid #667eea;
+    }
+
+    .info-item.full {
+      grid-column: 1 / -1;
+    }
+
+    .info-label {
+      color: #666;
+      font-size: 12px;
+      font-weight: bold;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+
+    .info-value {
+      color: #333;
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    .details-section {
+      margin-top: 30px;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border-left: 4px solid #764ba2;
+    }
+
+    .details-section h3 {
+      color: #764ba2;
+      margin-bottom: 15px;
+      font-size: 18px;
+    }
+
+    .custom-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+    }
+
+    .custom-item {
+      background: white;
+      padding: 12px;
+      border-radius: 5px;
+      border: 1px solid #ddd;
+    }
+
+    .custom-label {
+      color: #666;
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: bold;
+    }
+
+    .custom-value {
+      color: #333;
+      margin-top: 5px;
+      word-break: break-word;
+    }
+
+    .back-btn {
+      padding: 10px 20px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-bottom: 20px;
+      transition: background 0.3s;
+    }
+
+    .back-btn:hover {
+      background: #764ba2;
+    }
+
+    .search-results {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+      margin-bottom: 30px;
+    }
+
+    .search-results h3 {
+      color: #667eea;
+      margin-bottom: 15px;
+    }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 15px;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>🌍 Country Explorer</h1>
+      <p>Explore detailed information about countries around the world</p>
+    </header>
+
+    <!-- Search Box -->
+    <div class="search-box">
+      <input 
+        type="text" 
+        id="searchInput" 
+        placeholder="Search countries by name..." 
+        value="<%= typeof searchResults !== 'undefined' && searchResults !== null ? '' : '' %>"
+      >
+      <button onclick="submitSearch()">🔍 Search</button>
+    </div>
+
+    <!-- Error Message -->
+    <% if (error) { %>
+      <div class="error"><%= error %></div>
+    <% } %>
+
+    <!-- Search Results -->
+    <% if (searchResults && searchResults.length > 0) { %>
+      <div class="search-results">
+        <h3>Search Results (<%= searchResults.length %>)</h3>
+        <div class="results-grid">
+          <% searchResults.forEach(country => { %>
+            <div class="flag-item" onclick="selectCountry('<%= country.cca2 %>')">
+              <img src="<%= country.flags.png %>" alt="<%= country.name.common %>">
+              <div class="country-name"><%= country.name.common %></div>
+            </div>
+          <% }); %>
+        </div>
+      </div>
+    <% } %>
+
+    <!-- Selected Country Details -->
+    <% if (selectedCountry) { %>
+      <button class="back-btn" onclick="location.href='/'">← Back to All Countries</button>
+      
+      <div class="details-container">
+        <!-- Header with Flag and Basic Info -->
+        <div class="details-header">
+          <div class="flag-section">
+            <img src="<%= selectedCountry.flags.png %>" alt="Flag" class="flag">
+            <% if (selectedCountry.coatOfArms && selectedCountry.coatOfArms.png) { %>
+              <img src="<%= selectedCountry.coatOfArms.png %>" alt="Coat of Arms" class="coatOfArms">
+            <% } %>
+          </div>
+
+          <div class="info-section">
+            <h2><%= selectedCountry.name.common %></h2>
+            
+            <div class="info-grid">
+              <div class="info-item">
+                <div class="info-label">Official Name</div>
+                <div class="info-value"><%= selectedCountry.name.official || 'N/A' %></div>
+              </div>
+
+              <div class="info-item">
+                <div class="info-label">Region</div>
+                <div class="info-value"><%= selectedCountry.region || 'N/A' %></div>
+              </div>
+
+              <div class="info-item">
+                <div class="info-label">Subregion</div>
+                <div class="info-value"><%= selectedCountry.subregion || 'N/A' %></div>
+              </div>
+
+              <div class="info-item">
+                <div class="info-label">Area</div>
+                <div class="info-value"><%= selectedCountry.area ? (selectedCountry.area.toLocaleString() + ' km²') : 'N/A' %></div>
+              </div>
+
+              <div class="info-item">
+                <div class="info-label">Population</div>
+                <div class="info-value"><%= selectedCountry.population ? selectedCountry.population.toLocaleString() : 'N/A' %></div>
+              </div>
+
+              <div class="info-item">
+                <div class="info-label">Population Density</div>
+                <div class="info-value"><%= selectedCountry.densityPopulation ? (selectedCountry.densityPopulation.toFixed(2) + ' per km²') : 'N/A' %></div>
+              </div>
+
+              <div class="info-item full">
+                <div class="info-label">Capital</div>
+                <div class="info-value"><%= selectedCountry.capital ? selectedCountry.capital.join(', ') : 'N/A' %></div>
+              </div>
+
+              <div class="info-item full">
+                <div class="info-label">Country Codes</div>
+                <div class="info-value">
+                  CCA2: <strong><%= selectedCountry.cca2 %></strong> | 
+                  CCA3: <strong><%= selectedCountry.cca3 %></strong> | 
+                  CIOC: <strong><%= selectedCountry.cioc || 'N/A' %></strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Currencies -->
+        <% if (selectedCountry.currencies && Object.keys(selectedCountry.currencies).length > 0) { %>
+          <div class="details-section">
+            <h3>💱 Currencies</h3>
+            <div class="custom-grid">
+              <% Object.entries(selectedCountry.currencies).forEach(([code, currency]) => { %>
+                <div class="custom-item">
+                  <div class="custom-label"><%= code %></div>
+                  <div class="custom-value"><%= currency.name %></div>
+                  <div class="custom-label">Symbol</div>
+                  <div class="custom-value"><%= currency.symbol || 'N/A' %></div>
+                </div>
+              <% }); %>
+            </div>
+          </div>
+        <% } %>
+
+        <!-- Languages -->
+        <% if (selectedCountry.languages && Object.keys(selectedCountry.languages).length > 0) { %>
+          <div class="details-section">
+            <h3>🗣️ Languages</h3>
+            <div class="custom-grid">
+              <% Object.entries(selectedCountry.languages).forEach(([code, language]) => { %>
+                <div class="custom-item">
+                  <div class="custom-label"><%= code %></div>
+                  <div class="custom-value"><%= language %></div>
+                </div>
+              <% }); %>
+            </div>
+          </div>
+        <% } %>
+
+        <!-- Timezones -->
+        <% if (selectedCountry.timezones && selectedCountry.timezones.length > 0) { %>
+          <div class="details-section">
+            <h3>⏱️ Timezones</h3>
+            <div class="custom-grid">
+              <% selectedCountry.timezones.forEach(tz => { %>
+                <div class="custom-item">
+                  <div class="custom-value"><%= tz %></div>
+                </div>
+              <% }); %>
+            </div>
+          </div>
+        <% } %>
+
+        <!-- Borders -->
+        <% if (selectedCountry.borders && selectedCountry.borders.length > 0) { %>
+          <div class="details-section">
+            <h3>🚩 Bordering Countries</h3>
+            <div class="custom-grid">
+              <% selectedCountry.borders.forEach(border => { %>
+                <div class="custom-item">
+                  <div class="custom-value"><%= border %></div>
+                </div>
+              <% }); %>
+            </div>
+          </div>
+        <% } %>
+
+        <!-- Additional Info -->
+        <div class="details-section">
+          <h3>📊 Additional Information</h3>
+          <div class="custom-grid">
+            <div class="custom-item">
+              <div class="custom-label">UN Member</div>
+              <div class="custom-value"><%= selectedCountry.unMember ? '✓ Yes' : '✗ No' %></div>
+            </div>
+            <div class="custom-item">
+              <div class="custom-label">Start of Week</div>
+              <div class="custom-value"><%= selectedCountry.startOfWeek ? selectedCountry.startOfWeek.charAt(0).toUpperCase() + selectedCountry.startOfWeek.slice(1) : 'N/A' %></div>
+            </div>
+            <% if (selectedCountry.gini && Object.keys(selectedCountry.gini).length > 0) { %>
+              <div class="custom-item">
+                <div class="custom-label">GINI Index</div>
+                <div class="custom-value">
+                  <% Object.entries(selectedCountry.gini).forEach(([year, value]) => { %>
+                    <%= year %>: <%= value %>
+                  <% }); %>
+                </div>
+              </div>
+            <% } %>
+            <% if (selectedCountry.car && selectedCountry.car.signs) { %>
+              <div class="custom-item">
+                <div class="custom-label">Car Signs</div>
+                <div class="custom-value"><%= selectedCountry.car.signs.join(', ') %></div>
+              </div>
+            <% } %>
+          </div>
+        </div>
+
+        <!-- Maps Links -->
+        <% if (selectedCountry.maps && (selectedCountry.maps.openStreetMaps || selectedCountry.maps.googleMaps)) { %>
+          <div class="details-section">
+            <h3>🗺️ Maps</h3>
+            <div class="custom-grid">
+              <% if (selectedCountry.maps.openStreetMaps) { %>
+                <a href="<%= selectedCountry.maps.openStreetMaps %>" target="_blank" class="custom-item" style="text-decoration: none;">
+                  <div class="custom-label">OpenStreetMap</div>
+                  <div class="custom-value" style="color: #667eea;">🔗 Open Map</div>
+                </a>
+              <% } %>
+              <% if (selectedCountry.maps.googleMaps) { %>
+                <a href="<%= selectedCountry.maps.googleMaps %>" target="_blank" class="custom-item" style="text-decoration: none;">
+                  <div class="custom-label">Google Maps</div>
+                  <div class="custom-value" style="color: #667eea;">🔗 Open Map</div>
+                </a>
+              <% } %>
+            </div>
+          </div>
+        <% } %>
+
+        <% if (selectedCountry.postalCode && selectedCountry.postalCode.format) { %>
+          <div class="details-section">
+            <h3>📮 Postal Code Format</h3>
+            <div class="custom-item">
+              <div class="custom-value"><strong><%= selectedCountry.postalCode.format %></strong></div>
+            </div>
+          </div>
+        <% } %>
+      </div>
+    <% } else { %>
+      <!-- All Countries Grid -->
+      <% if (countries && countries.length > 0) { %>
+        <div class="flags-grid">
+          <% countries.forEach(country => { %>
+            <div class="flag-item" onclick="selectCountry('<%= country.cca2 %>')">
+              <img src="<%= country.flags.png %>" alt="<%= country.name.common %>">
+              <div class="country-name"><%= country.name.common %></div>
+            </div>
+          <% }); %>
+        </div>
+      <% } %>
+    <% } %>
+
+  </div>
+
+  <script>
+    function selectCountry(cca2) {
+      window.location.href = `/country/${cca2}`;
+    }
+
+    function submitSearch() {
+      const searchInput = document.getElementById('searchInput');
+      const country = searchInput.value.trim();
+      
+      if (country) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/search';
+        
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'country';
+        input.value = country;
+        
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+      }
+    }
+
+    // Allow Enter key to submit search
+    document.getElementById('searchInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        submitSearch();
+      }
+    });
+  </script>
+
+</body>
+</html>
